@@ -1,0 +1,400 @@
+--ld50 inevitable orbit
+--thumpertws 2022
+
+function _init()
+cartdata("sat_score")
+p_x=63
+p_y=48
+sel_y=46
+sel=0
+t=0
+gravity=0.05
+dc=0
+r=24
+warn={8,9,10}
+gt=0
+chg_m=0
+b_spd=0
+pl_anim={1,3,5,7}
+pl2_anim={33,35,37}
+pl3_anim={25,26}
+pl4_anim={64,68,72,76}
+plr_anim={9,10}
+sn_anim={39,41}
+tank={}
+coun=1
+star={}
+
+init_start()
+end
+
+function init_start()
+st=0
+sel=1
+_update=upd_start
+_draw=drw_start
+
+end
+
+function init_score()
+_update=upd_score
+_draw=drw_score
+end
+
+function init_over()
+music(5,nil,nil)
+_update=upd_over
+_draw=drw_over
+end
+
+function init_game()
+tanks=3
+dc=0
+t=0
+r=24
+p_x=63
+p_y=48
+fuel=100
+gt=0
+tick=0
+sec=0
+minute=0
+hr=0
+music(0,15,3)
+_update=upd_game
+_draw=drw_game
+end
+
+--game over
+function upd_over()
+if btnp(❎) then
+sfx(14)
+wait(15)
+reload(0x1000, 0x1000, 0x2000)
+init_start()
+sel=1
+end
+if btnp(🅾️) then
+sfx(14)
+wait(15)
+reload(0x1000, 0x1000, 0x2000)
+sel=1
+init_game()
+
+end
+
+end
+
+function drw_over()
+cls(1)
+
+print("game over",46,32,7)
+print("you kept the satellite",20,46,7)
+print("in the sky for",36,53,7)
+print(minute .." minutes and "..sec.." seconds.",16,60,7)
+print("it was inevitable, ",30,70,7)
+if minute<1 then 
+print("but that was pretty sad",20,77,7)
+elseif minute==1 then
+print("but that was a good effort",12,77,7)
+elseif minute==2 then
+print("but that was exceptional",16,77,7)
+elseif minute==3 then
+print("but that was incredible",18,77,7)
+elseif minute==4 then
+print("but that was unbelievable",14,77,7)
+elseif minute>5 then
+print("but you are iron man",30,77,7)
+
+end
+print("press ❎/x to return to start",6,113,7)
+print("press 🅾️/z to try again",18,120,7)
+
+end
+--game
+function upd_game()
+gt+=1
+tick+=1
+b_spd+=1
+
+if gt>90 then gt=0 end
+if tick==30 then sec+=1 tick=0 end 
+if sec==9 and tick==0 then change=true
+if chg_m>3 then chg_m=3 change= false end
+	 end
+	 if sec==18 and tick==0 then change=true
+if chg_m>3 then chg_m=3 change= false end
+	 end
+if sec==27 and tick==0 then change=true
+	if chg_m>3 then chg_m=3 change= false end
+	 end
+if sec==60 then minute+=1 sec=0  end
+if minute==60 then hr+=1 minute=0 end
+if fuel>=50 then f_col=11
+elseif fuel<50 and fuel>=25 then f_col=9
+else
+f_col=8
+end
+t+=.01
+dc+=gravity
+p_x=(r-dc)*cos(t)+63
+p_y=(r-dc)*sin(t)+63
+if gt/4%5==0 then
+for x=0,15 do
+	for y=0,15 do
+	if mget(x,y)==11 then
+	mset(x,y,12)
+	elseif mget(x,y)==12 then
+	mset(x,y,11)
+	end
+	end
+end
+end
+
+	if btnp(🅾️) and tanks>0 then
+--deploysfx
+		
+--add_tank
+	if #tank==0 then
+	sfx(11)
+		add_new_tank()
+		
+		tank[1]:create()
+		tanks-=1
+	end
+	end
+	if btn(❎) and fuel>=0 then
+		sfx(10)
+ 	dc-=1
+ 	fuel-=1
+ 	boosted=true
+	end
+	if mget(p_x/8,p_y/8)==11 then
+	sfx(9)
+	fuel=100
+	mset(p_x/8,p_y/8,0)
+	tank[1]:update()
+	end
+	if dc<-14 then dc=-14 end
+	if change==true then
+		chg_m+=1
+		if chg_m==1 then
+			music(1,0,3)
+			change=false
+		elseif chg_m==2 then
+			music(2,0,3)
+			change=false
+		elseif chg_m==3 then
+			music(3,0,3)
+			change=false
+		end
+	end
+end
+
+function drw_game()
+cls(0)
+drw_back()
+drw_hud()
+drw_fuelbar()
+drw_plyr()
+--circfill(p_x,p_y,.5,6)
+
+drw_planet()
+drw_tanks()
+if minute<1 and sec<=5 then
+print("press ❎/x to use booster",1,12,7)
+print("press 🅾️/z to launch fuel tank",1,111,7)
+end
+print(minute .."m "..sec.."s",102,120,7)
+if boosted==true then
+	pset(p_x,p_y+4,10)
+	pset(p_x,p_y+5,9)
+	pset(p_x,p_y+6,8)
+	boosted=false
+end
+map()
+
+
+if pget(p_x,p_y)==3 or pget(p_x,p_y)==12 then
+if dget(0)<=minute and dget(1)<=sec then
+dset(0,minute)
+dset(1,sec)
+end
+init_over()
+
+end
+
+
+
+end
+--draws
+function drw_start()
+cls(1)
+rect(0,0,127,127,7)
+print("inevitable orbit",32,32,7)
+print("start game",48,48,7)
+print("high score",48,60,7)
+print("press ❎/x to select",26,120,7)
+spr(plr_anim[flr(st/8%2)+1],32,sel_y)
+end
+
+function drw_score()
+cls(5)
+end
+
+--hud
+function drw_hud()
+rect(0,0,127,8,7)
+end
+--fuel
+
+function drw_fuelbar()
+if fuel>0 then
+print("fuel: ",2,2,f_col)
+rectfill(24,3,24+fuel,5,f_col)
+else
+print("out of fuel",2,2,warn[flr(gt%3)])
+end
+end
+
+function drw_planet()
+spr(pl_anim[flr(gt/3%4)+1],56,56,2,2)
+spr(pl2_anim[flr(gt/3%3)+1],22,22,2,2)
+spr(sn_anim[flr(gt/3%2)+1],112,9,2,2)
+spr(pl3_anim[flr(gt/3%2)+1],40,102,1,1)
+spr(pl4_anim[flr(gt/3%4)+1],96,80,4,4)
+
+end
+function drw_plyr()
+--circ(63,63,r-dc,7)
+spr(plr_anim[flr(gt/10%2)+1],p_x-4,p_y-4)
+
+end
+
+function drw_back()
+if b_spd>=48 then b_spd=0 end
+line(0,9,63,63,1)
+line(127,9,64,63,1)
+line(0,118,63,64,1)
+line(127,118,64,64,1)
+line(48,9,63,63,1)
+line(80,9,63,63,1)
+line(63,64,0,48,1)
+line(63,64,0,80,1)
+line(63,64,127,48,1)
+line(63,64,127,80,1)
+line(63,64,48,118,1)
+line(63,64,80,118,1)
+end
+
+function drw_tanks()
+rect(0,117,127,127,7)
+print("spare tanks: ",2,120,7)
+if tanks==3 then
+spr(11,48,118)
+spr(11,54,118)
+spr(11,60,118)
+elseif tanks==2 then
+spr(11,48,118)
+spr(11,54,118)
+elseif tanks==1 then
+spr(11,48,118)
+end
+end
+
+function drw_score()
+cls(1)
+
+print("the longest",42,39,7)
+print("you kept the satellite",20,46,7)
+print("in the sky for was",30,53,7)
+print(dget(0) .." minutes and "..dget(1).." seconds",16,60,7)
+print("it was inevitable, ",30,70,7)
+if dget(0)<1 then 
+print("and that was pretty sad",20,77,7)
+elseif dget(0)==1 then
+print("and that was a good effort",12,77,7)
+elseif dget(0)==2 then
+print("and that was exceptional",16,77,7)
+elseif dget(0)==3 then
+print("and that was incredible",18,77,7)
+elseif dget(0)==4 then
+print("and that was unbelievable",14,77,7)
+elseif dget(0)>5 then
+print("and you are iron man",30,77,7)
+
+end
+print("press ❎/x to return to start",6,120,7)
+
+end
+--misc
+
+--tank
+function add_new_tank()
+add(tank,{
+	x=mid(44,flr(rnd(48))+48,96),
+	y=mid(44,flr(rnd(48))+48,96),
+	t_anim={11,12},
+	create=function(self)
+		mset(self.x/8,self.y/8,11)
+	end,
+	update=function(self)
+	del(tank,self)
+	
+	
+	end
+	})
+	coun+=1
+
+	
+end
+
+--stars
+
+--other updates
+function upd_start()
+st+=1
+if st>30 then st=0 end
+if btnp(⬆️) and sel==1 then
+sel=2
+sel_y=58
+elseif btnp(⬆️) and sel==2 then
+sel=1
+sel_y=46
+end
+if btnp(⬇️) and sel==1 then
+sel=2
+sel_y=58
+elseif btnp(⬇️) and sel==2 then
+sel=1
+sel_y=46
+end
+if btnp(❎) and sel==1 then
+sfx(14)
+wait(15)
+init_game()
+
+elseif btnp(❎) and sel==2 then
+sfx(14)
+wait(15)
+music(3,0,3)
+init_score() 
+
+end
+end
+
+function upd_score()
+if btnp(❎) then
+sfx(14)
+wait(15)
+init_start()
+sel=2
+end
+end
+
+function wait(ttw)
+repeat
+ttw-=1
+flip()
+until ttw<0
+end
